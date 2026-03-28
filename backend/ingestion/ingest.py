@@ -1,5 +1,5 @@
 """
-Ingestion script: reads markdown chapter files, cleans content,
+Ingestion script: reads chapter files (PDF or Markdown), cleans content,
 splits into overlapping chunks with metadata, and saves to chunks.json.
 """
 
@@ -11,6 +11,12 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import CHAPTERS_DIR, CHUNKS_FILE, CHUNK_SIZE, CHUNK_OVERLAP
 
+# Chapter name mapping for PDF files
+CHAPTER_NAMES = {
+    "keph102": "Kinematics",
+    "keph104": "Laws Of Motion",
+}
+
 
 def clean_text(text: str) -> str:
     """Remove excessive whitespace and normalize text."""
@@ -19,8 +25,26 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
+def read_pdf(filepath: str) -> str:
+    """Extract text from a PDF file using PyMuPDF."""
+    import fitz  # PyMuPDF
+
+    doc = fitz.open(filepath)
+    text_parts = []
+    for page in doc:
+        text_parts.append(page.get_text())
+    doc.close()
+    return "\n\n".join(text_parts)
+
+
+def read_markdown(filepath: str) -> str:
+    """Read a markdown file."""
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return f.read()
+
+
 def extract_sections(text: str) -> list[dict]:
-    """Split markdown into sections based on ## headings."""
+    """Split text into sections based on ## headings or page breaks."""
     sections = []
     current_title = "Introduction"
     current_content = []
@@ -42,6 +66,38 @@ def extract_sections(text: str) -> list[dict]:
             "title": current_title,
             "content": '\n'.join(current_content).strip()
         })
+
+    # If no sections were found (e.g., PDFs without ## headings),
+    # split into fixed-size sections based on paragraphs
+    if len(sections) == 1 and len(sections[0]["content"]) > 2000:
+        full_text = sections[0]["content"]
+        paragraphs = full_text.split('\n\n')
+        sections = []
+        current_section = []
+        current_len = 0
+        section_num = 1
+
+        for para in paragraphs:
+            para = para.strip()
+            if not para:
+                continue
+            current_section.append(para)
+            current_len += len(para)
+
+            if current_len > 1500:
+                sections.append({
+                    "title": f"Section {section_num}",
+                    "content": '\n\n'.join(current_section)
+                })
+                current_section = []
+                current_len = 0
+                section_num += 1
+
+        if current_section:
+            sections.append({
+                "title": f"Section {section_num}",
+                "content": '\n\n'.join(current_section)
+            })
 
     return sections
 
@@ -71,22 +127,38 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
     return chunks
 
 
+def get_chapter_name(filename: str) -> str:
+    """Derive a human-readable chapter name from a filename."""
+    basename = os.path.splitext(filename)[0]
+
+    # Check the mapping first
+    if basename in CHAPTER_NAMES:
+        return CHAPTER_NAMES[basename]
+
+    # Fallback: clean up the filename
+    return basename.replace('_', ' ').replace('-', ' ').title()
+
+
 def ingest_chapters(chapters_dir: str = CHAPTERS_DIR) -> list[dict]:
-    """Read all markdown files, chunk them, and return structured chunks."""
+    """Read all chapter files (PDF + Markdown), chunk them, and return structured chunks."""
     all_chunks = []
     chunk_index = 0
+    supported_extensions = ('.md', '.pdf')
 
     for filename in sorted(os.listdir(chapters_dir)):
-        if not filename.endswith('.md'):
+        if not filename.lower().endswith(supported_extensions):
             continue
 
         filepath = os.path.join(chapters_dir, filename)
-        chapter_name = filename.replace('.md', '').replace('_', ' ').title()
+        chapter_name = get_chapter_name(filename)
 
         print(f"📖 Processing: {chapter_name} ({filename})")
 
-        with open(filepath, 'r', encoding='utf-8') as f:
-            raw_text = f.read()
+        # Read file based on extension
+        if filename.lower().endswith('.pdf'):
+            raw_text = read_pdf(filepath)
+        else:
+            raw_text = read_markdown(filepath)
 
         cleaned = clean_text(raw_text)
         sections = extract_sections(cleaned)

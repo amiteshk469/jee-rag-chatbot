@@ -26,19 +26,39 @@ def get_chroma_client():
 
 
 def embed_texts(texts: list[str], model: str = EMBEDDING_MODEL) -> list[list[float]]:
-    """Get embeddings from Gemini in batches."""
-    all_embeddings = []
-    batch_size = 50
+    """Get embeddings from Gemini in batches with rate limit handling."""
+    import time as _time
 
+    all_embeddings = []
+    batch_size = 20  # Small batches to stay under free tier rate limit
+
+    total_batches = (len(texts) - 1) // batch_size + 1
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
-        result = client.models.embed_content(
-            model=model,
-            contents=batch,
-        )
-        for emb in result.embeddings:
-            all_embeddings.append(emb.values)
-        print(f"   Embedded batch {i // batch_size + 1}/{(len(texts) - 1) // batch_size + 1}")
+        batch_num = i // batch_size + 1
+
+        # Retry logic for rate limits
+        for attempt in range(5):
+            try:
+                result = client.models.embed_content(
+                    model=model,
+                    contents=batch,
+                )
+                for emb in result.embeddings:
+                    all_embeddings.append(emb.values)
+                print(f"   Embedded batch {batch_num}/{total_batches}")
+                break
+            except Exception as e:
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    wait = 15 * (attempt + 1)
+                    print(f"   ⏳ Rate limited, waiting {wait}s... (attempt {attempt + 1}/5)")
+                    _time.sleep(wait)
+                else:
+                    raise
+
+        # Small delay between batches to avoid hitting rate limits
+        if batch_num < total_batches:
+            _time.sleep(2)
 
     return all_embeddings
 

@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Copy data directory
+# Copy data directory (chapters + pre-built index)
 COPY ../data /app/data
 
 EXPOSE 8000
