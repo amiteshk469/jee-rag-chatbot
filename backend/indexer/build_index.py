@@ -53,13 +53,13 @@ def build_index(force_rebuild: bool = False):
         collection = chroma_client.get_collection(COLLECTION_NAME)
         count = collection.count()
         print(f"✅ Index already exists with {count} documents. Skipping rebuild.")
-        print(f"   Use --force to rebuild.")
+        print("   Use --force to rebuild.")
         return collection
 
     # Load chunks
     if not os.path.exists(CHUNKS_FILE):
         print(f"❌ Chunks file not found: {CHUNKS_FILE}")
-        print(f"   Run ingestion first: python ingestion/ingest.py")
+        print("   Run ingestion first: python ingestion/ingest.py")
         sys.exit(1)
 
     with open(CHUNKS_FILE, 'r', encoding='utf-8') as f:
@@ -88,7 +88,7 @@ def build_index(force_rebuild: bool = False):
     print(f"   Done in {elapsed:.1f}s")
 
     # Add to ChromaDB
-    print(f"📥 Adding to ChromaDB...")
+    print("📥 Adding to ChromaDB...")
     ids = [str(chunk["chunk_id"]) for chunk in chunks]
     metadatas = [
         {

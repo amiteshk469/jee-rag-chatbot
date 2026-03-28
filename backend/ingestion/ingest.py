@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     # Print stats
     chapters = set(c["chapter"] for c in chunks)
-    print(f"\n📊 Ingestion Stats:")
+    print("\n📊 Ingestion Stats:")
     print(f"   Chapters: {len(chapters)}")
     print(f"   Total chunks: {len(chunks)}")
     for ch in chapters:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     if chunks:
         avg_len = sum(c["char_count"] for c in chunks) / len(chunks)
         print(f"   Avg chunk size: {avg_len:.0f} chars")
-        print(f"\n📝 Sample chunk:")
+        print("\n📝 Sample chunk:")
         print(f"   Chapter: {chunks[0]['chapter']}")
         print(f"   Section: {chunks[0]['section']}")
         print(f"   Text: {chunks[0]['text'][:200]}...")
