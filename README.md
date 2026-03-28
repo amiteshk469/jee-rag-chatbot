@@ -5,7 +5,7 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers JEE Physics ques
 ![Stack](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square)
 ![Stack](https://img.shields.io/badge/Frontend-Next.js-000?style=flat-square)
 ![Stack](https://img.shields.io/badge/Vector_DB-ChromaDB-blue?style=flat-square)
-![Stack](https://img.shields.io/badge/LLM-GPT--3.5--turbo-74aa9c?style=flat-square)
+![Stack](https://img.shields.io/badge/LLM-Gemini--2.0--flash-8E24AA?style=flat-square)
 
 ---
 
@@ -17,7 +17,7 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers JEE Physics ques
 │  (Next.js)   │◀────│                                        │
 │              │     │  ┌──────────┐  ┌──────────┐  ┌──────┐ │
 │ Chat UI      │     │  │ Retriever│──│ ChromaDB │  │ LLM  │ │
-│ Source Cards │     │  │          │  │ (Vector  │  │(GPT) │ │
+│ Source Cards │     │  │          │  │ (Vector  │  │(Gemini)│ │
 │ Chapter      │     │  │ Embed    │  │  Index)  │  │      │ │
 │ Filters      │     │  │ Query    │  └──────────┘  └──────┘ │
 │              │     │  └──────────┘                          │
@@ -29,7 +29,7 @@ A **Retrieval-Augmented Generation (RAG)** chatbot that answers JEE Physics ques
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- OpenAI API key
+- Google Gemini API key
 
 ### 1. Clone & Setup
 
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 Create `.env` in the project root:
 ```
-OPENAI_API_KEY=sk-your-key-here
+GEMINI_API_KEY=your-key-here
 ```
 
 ### 3. Ingest & Index
@@ -152,7 +152,7 @@ jee-rag-chatbot/
 
 ### Backend → Render
 1. Connect GitHub repo, set root to `backend/`
-2. Add env var: `OPENAI_API_KEY`
+2. Add env var: `GEMINI_API_KEY`
 3. Add a persistent disk at `/app/data/chroma_index/`
 
 ### Frontend → Vercel
@@ -184,7 +184,7 @@ jee-rag-chatbot/
 - **No persistent chat history**: Conversations are session-only (React state). Could add database-backed history.
 - **No re-ranking**: Uses raw cosine similarity. HyDE or cross-encoder re-ranking could improve retrieval quality.
 - **No image/diagram support**: Physics diagrams are not indexed. Could add multi-modal support.
-- **Single LLM**: GPT-3.5-turbo only. Could add fallback to local models for cost savings.
+- **Single LLM**: Gemini 2.0 Flash only. Could add fallback to local models for cost savings.
 
 ---
 
@@ -194,7 +194,7 @@ jee-rag-chatbot/
 |-----------|-----------|
 | Backend | FastAPI (Python 3.11) |
 | Vector Store | ChromaDB (persistent) |
-| Embeddings | OpenAI text-embedding-3-small |
-| LLM | GPT-3.5-turbo |
+| Embeddings | Google Gemini gemini-embedding-001 |
+| LLM | Google Gemini 2.0 Flash |
 | Frontend | Next.js 15 + TypeScript |
 | Deployment | Docker, Render, Vercel |
