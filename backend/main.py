@@ -4,12 +4,9 @@ Exposes /query, /health, /index/info, /admin/reindex, /feedback, and /analytics 
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
 import time
-
-from config import CORS_ORIGINS
 from indexer.retriever import retrieve, get_index_info
 from llm.generator import generate_answer
 from logger import log_query, log_feedback, get_analytics
@@ -35,14 +32,6 @@ app = FastAPI(
     description="RAG-based API for answering JEE Physics questions from Kinematics and Laws of Motion chapters.",
     version="1.0.0",
     lifespan=lifespan,
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 

@@ -12,8 +12,14 @@ from config import GEMINI_API_KEY, LLM_MODEL
 from google import genai
 from google.genai import types
 
-# Initialize Gemini client
-client = genai.Client(api_key=GEMINI_API_KEY)
+_client = None
+
+
+def get_client():
+    global _client
+    if _client is None:
+        _client = genai.Client(api_key=GEMINI_API_KEY)
+    return _client
 
 SYSTEM_PROMPT = """You are a helpful JEE Physics tutor. Answer the student's question using ONLY the provided context from the study material.
 
@@ -69,7 +75,7 @@ Student's Question: {question}
 Please provide a clear, grounded answer based on the context above."""
 
     try:
-        response = client.models.generate_content(
+        response = get_client().models.generate_content(
             model=LLM_MODEL,
             contents=history + [
                 types.Content(

@@ -24,5 +24,3 @@ TOP_K = 5
 LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.0-flash")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "models/gemini-embedding-001")
 
-# CORS
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:5173").split(",")
