@@ -1,4 +1,5 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+console.log('[DEBUG] API_BASE =', API_BASE);
 
 export interface SourceChunk {
   text: string;
